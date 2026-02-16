@@ -1,0 +1,9 @@
+[[mgr.prepend_keymap]]
+on   = [ "\\", "f", "f" ]
+run  = '''shell 'result=$(fd --type f --hidden --follow --exclude .git | fzf --preview "bat --color=always --style=numbers --line-range=:500 {}" --preview-window=right:60%) && ya emit reveal "$result"' --block'''
+desc = "Find files recursively with preview"
+
+[[mgr.prepend_keymap]]
+on   = [ "\\", "f", "l" ]
+run  = "filter --smart"
+desc = "Filter files in current directory"
