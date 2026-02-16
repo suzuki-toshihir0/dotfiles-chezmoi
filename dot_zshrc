@@ -59,6 +59,7 @@ alias tks="tmux kill-session"
 alias tn="tmux new -s"
 alias v="nvim"
 alias yank='xclip -selection clipboard'
+alias img='wezterm imgcat'
 
 # 関数
 repos() {
