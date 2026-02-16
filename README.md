@@ -1,6 +1,6 @@
 # dotfiles
 
-[chezmoi](https://www.chezmoi.io/) で管理する dotfiles。
+[chezmoi](https://www.chezmoi.io/) で管理する dotfiles
 
 ## Requirements
 
