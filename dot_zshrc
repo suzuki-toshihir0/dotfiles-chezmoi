@@ -28,6 +28,9 @@ export VOLTA_HOME="$HOME/.volta"
 # Gallop
 [[ -d "$HOME/.gallop/bin" ]] && export PATH="$HOME/.gallop/bin:$PATH"
 
+# 1Password SSH Agent
+export SSH_AUTH_SOCK=~/.1password/agent.sock
+
 # Completion（fpath + compinit）
 [[ -d "$HOME/.zfunc" ]] && fpath+=("$HOME/.zfunc")
 autoload -U compinit
@@ -76,9 +79,11 @@ worktrees() {
 # 左上: nvim .  |  右: claude
 # 左下: shell   |
 ide() {
+  local cwd=$(pwd)
   local right_pane=$(wezterm cli split-pane --right --percent 50)
-  echo "claude" | wezterm cli send-text --pane-id "$right_pane" --no-paste
-  wezterm cli split-pane --bottom --percent 50 > /dev/null
+  printf 'cd %q && claude\n' "$cwd" | wezterm cli send-text --pane-id "$right_pane" --no-paste
+  local bottom_pane=$(wezterm cli split-pane --bottom --percent 50)
+  printf 'cd %q\n' "$cwd" | wezterm cli send-text --pane-id "$bottom_pane" --no-paste
   nvim .
 }
 

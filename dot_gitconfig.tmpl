@@ -1,6 +1,17 @@
+{{ $email := onepasswordRead "op://Personal/ue36yo6rqcnrii5nqbi5zfkxg4/pop_username" -}}
+{{ $signingKey := onepasswordRead "op://Personal/id_ed25519/public_key" -}}
 [user]
 	name = Toshihiro Suzuki
-	email = {{ onepasswordRead "op://Personal/ue36yo6rqcnrii5nqbi5zfkxg4/pop_username" }}
+	email = {{ $email }}
+	signingkey = {{ $signingKey }}
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	allowedSignersFile = ~/.ssh/allowed_signers
+[commit]
+	gpgsign = true
+[tag]
+	gpgsign = true
 
 [credential]
 	helper = !/usr/bin/gh auth git-credential

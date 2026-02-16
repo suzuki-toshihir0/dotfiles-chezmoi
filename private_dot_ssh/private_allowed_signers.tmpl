@@ -1,0 +1,3 @@
+{{ $email := onepasswordRead "op://Personal/ue36yo6rqcnrii5nqbi5zfkxg4/pop_username" -}}
+{{ $signingKey := onepasswordRead "op://Personal/id_ed25519/public_key" -}}
+{{ $email }} {{ $signingKey }}
