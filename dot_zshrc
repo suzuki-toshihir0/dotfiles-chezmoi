@@ -60,6 +60,7 @@ alias tn="tmux new -s"
 alias v="nvim"
 alias yank='xclip -selection clipboard'
 alias img='wezterm imgcat'
+alias cr='cprev'
 
 # 関数
 repos() {
