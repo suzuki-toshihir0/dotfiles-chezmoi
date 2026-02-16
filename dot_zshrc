@@ -28,6 +28,9 @@ export VOLTA_HOME="$HOME/.volta"
 # Gallop
 [[ -d "$HOME/.gallop/bin" ]] && export PATH="$HOME/.gallop/bin:$PATH"
 
+# 1Password SSH Agent
+export SSH_AUTH_SOCK=~/.1password/agent.sock
+
 # Completion（fpath + compinit）
 [[ -d "$HOME/.zfunc" ]] && fpath+=("$HOME/.zfunc")
 autoload -U compinit
