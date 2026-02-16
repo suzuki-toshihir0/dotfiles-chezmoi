@@ -1,0 +1,25 @@
+[user]
+	name = Toshihiro Suzuki
+	email = {{ onepasswordRead "op://Personal/ue36yo6rqcnrii5nqbi5zfkxg4/pop_username" }}
+
+[credential]
+	helper = !/usr/bin/gh auth git-credential
+
+[alias]
+	co  = checkout
+	cof = !git branch -a | fzf --height 30% --reverse --border | xargs git checkout
+	ylf = !git log --oneline | fzf --height 30% --reverse --border --no-sort | awk '{printf \"%s\", $1}' | win32yank.exe -i
+	br  = branch
+	st  = status
+	ci  = commit
+	ria = rebase -i --autosquash
+	superpull = pull upstream master
+	superpush = ! git push -u origin $(git rev-parse --abbrev-ref HEAD)
+	force-pull = ! git reset --hard $(git rev-parse --abbrev-ref --symbolic-full-name @{u})
+	delete-merged-branches = !git branch --merged | grep -v \\* | xargs -I % git branch -d %
+[core]
+	editor = nvim
+	quotepath = false
+	excludesfile = ~/.gitignore
+[pull]
+	ff = only

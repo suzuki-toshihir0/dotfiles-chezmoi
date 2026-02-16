@@ -1,0 +1,102 @@
+# 履歴設定
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt share_history
+setopt hist_ignore_dups
+setopt hist_reduce_blanks
+
+# 履歴検索（上下キーで前方一致検索）
+autoload -Uz history-search-end
+zle -N history-beginning-search-backward-end history-search-end
+zle -N history-beginning-search-forward-end history-search-end
+bindkey "^[[A" history-beginning-search-backward-end
+bindkey "^[[B" history-beginning-search-forward-end
+
+# PATH 設定
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/sbin:/bin
+[[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
+[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
+[[ -d "$HOME/.cargo/bin" ]] && export PATH="$HOME/.cargo/bin:$PATH"
+[[ -d "$HOME/.npm-global/bin" ]] && export PATH="$HOME/.npm-global/bin:$PATH"
+[[ -d "/opt/nvim" ]] && export PATH="/opt/nvim:$PATH"
+
+# Volta (Node.js)
+export VOLTA_HOME="$HOME/.volta"
+[[ -d "$VOLTA_HOME/bin" ]] && export PATH="$VOLTA_HOME/bin:$PATH"
+
+# Gallop
+[[ -d "$HOME/.gallop/bin" ]] && export PATH="$HOME/.gallop/bin:$PATH"
+
+# Completion（fpath + compinit）
+[[ -d "$HOME/.zfunc" ]] && fpath+=("$HOME/.zfunc")
+autoload -U compinit
+compinit -i
+
+# プライベート設定の読み込み
+[[ -f ~/.zshrc_private ]] && source ~/.zshrc_private
+
+# エディタ設定
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='vim'
+  export VISUAL='vim'
+  export SUDO_EDITOR='vim'
+else
+  export EDITOR='nvim'
+  export VISUAL='nvim'
+  export SUDO_EDITOR='nvim'
+fi
+
+# エイリアス
+alias e="echo -n"
+alias g="git"
+alias t="tmux"
+alias ta="tmux attach"
+alias tks="tmux kill-session"
+alias tn="tmux new -s"
+alias v="nvim"
+alias yank='xclip -selection clipboard'
+
+# 関数
+repos() {
+  local dir=$(ls ~/repos | fzf --height 30% --reverse --border)
+  [[ -n "$dir" ]] && cd ~/repos/"$dir"
+}
+
+worktrees() {
+  local dir=$(git worktree list 2>/dev/null | awk '{print $1}' | fzf --height 30% --reverse --border)
+  if [[ -z "$dir" ]]; then
+    echo "No worktree selected or worktrees not found."
+    return 1
+  fi
+  cd "$dir" || echo "Failed to change directory to $dir"
+}
+
+# WezTerm CLI で3ペイン IDE レイアウトを構築
+# 左上: nvim .  |  右: claude
+# 左下: shell   |
+ide() {
+  local right_pane=$(wezterm cli split-pane --right --percent 50)
+  echo "claude" | wezterm cli send-text --pane-id "$right_pane" --no-paste
+  wezterm cli split-pane --bottom --percent 50 > /dev/null
+  nvim .
+}
+
+# プラグイン
+# zsh-syntax-highlighting は .zshrc の末尾付近で読み込む必要がある。
+# zle ウィジェットやフックを後から登録されたものも含めてラップするため、
+# compinit や他プラグインより後に source すること。
+# 参照: https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# fzf キーバインド・補完
+source /usr/share/fzf/key-bindings.zsh
+source /usr/share/fzf/completion.zsh
+
+# ツール初期化
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
+
+# Starship プロンプト
+eval "$(starship init zsh)"

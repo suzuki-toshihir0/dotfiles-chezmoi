@@ -1,0 +1,4 @@
+.cache/
+.vim/
+*/.zshrc_private
+**/.worktrees/
