@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+# cprev - 直前のコマンドと出力をクリップボードにコピーする
+# weztermのスクロールバックからstarshipプロンプトの ❯ を境界として検出
+
+set -euo pipefail
+
+# wezterm内で実行されているかチェック
+if [[ -z "${WEZTERM_PANE:-}" ]]; then
+  echo "エラー: cprevはwezterm内でのみ使用できます" >&2
+  exit 1
+fi
+
+# 引数の解析: cprev [-n] N
+count=1
+case "${1:-}" in
+  -n)
+    count="${2:?エラー: -n にはコマンド数を指定してください}"
+    ;;
+  -h|--help)
+    cat <<'USAGE'
+使用方法: cprev [-n] N
+
+直前のコマンドと出力をクリップボードにコピーします。
+
+  cprev        直前1個のコマンドと出力をコピー
+  cprev 3      直前3個分をコピー
+  cprev -n 3   同上
+
+  cprev | cat   コピーせずstdoutにプレビュー
+USAGE
+    exit 0
+    ;;
+  "")
+    count=1
+    ;;
+  *)
+    count="$1"
+    ;;
+esac
+
+# countが正の整数かチェック
+if ! [[ "$count" =~ ^[1-9][0-9]*$ ]]; then
+  echo "エラー: コマンド数は正の整数で指定してください: $count" >&2
+  exit 1
+fi
+
+# スクロールバックを取得してコマンドブロックを抽出
+# 各行の末尾空白を除去してからawkに渡す
+result=$(wezterm cli get-text --start-line -10000 | sed 's/[[:space:]]*$//' | awk -v n="$count" '
+  # ❯ を含む行をプロンプト行として検出
+  /❯ / {
+    # ❯ 以降をコマンドとして取得
+    cmd = $0
+    sub(/.*❯ /, "", cmd)
+
+    # 空コマンド（Enterだけ押した場合）はスキップ
+    if (cmd ~ /^[[:space:]]*$/) next
+
+    block_count++
+    blocks[block_count] = "$ " cmd
+    in_block = 1
+    has_output = 0
+    blank_buf = 0
+    next
+  }
+
+  # プロンプト行以外はコマンド出力として蓄積
+  in_block {
+    if ($0 == "") {
+      # 出力が始まっていれば空行をバッファ、そうでなければ捨てる
+      if (has_output) blank_buf++
+    } else {
+      # バッファされた空行を挿入（出力中の空行のみ保持）
+      for (j = 0; j < blank_buf; j++)
+        blocks[block_count] = blocks[block_count] "\n"
+      blank_buf = 0
+      has_output = 1
+      blocks[block_count] = blocks[block_count] "\n" $0
+    }
+  }
+
+  END {
+    # 最後のブロック（cprev自体）をスキップ
+    total = block_count - 1
+
+    if (total <= 0) {
+      print "NO_COMMANDS" > "/dev/stderr"
+      exit 1
+    }
+
+    # 直前N個を取得（start位置を計算）
+    start = total - n + 1
+    if (start < 1) start = 1
+
+    first = 1
+    for (i = start; i <= total; i++) {
+      if (!first) printf "\n\n"
+      print blocks[i]
+      first = 0
+    }
+  }
+')
+
+if [[ -z "$result" ]]; then
+  echo "エラー: コピー対象のコマンドが見つかりませんでした" >&2
+  exit 1
+fi
+
+# stdout がパイプの場合はそのまま出力、そうでなければクリップボードにコピー
+if [[ -t 1 ]]; then
+  echo "$result" | xclip -selection clipboard
+  # コピーしたコマンド数を数える
+  copied=$(echo "$result" | grep -c '^\$ ' || true)
+  echo "${copied}個のコマンドと出力をクリップボードにコピーしました"
+else
+  echo "$result"
+fi
