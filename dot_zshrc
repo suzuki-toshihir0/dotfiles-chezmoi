@@ -31,6 +31,10 @@ export VOLTA_HOME="$HOME/.volta"
 # 1Password SSH Agent
 export SSH_AUTH_SOCK=~/.1password/agent.sock
 
+# aws-vault
+export AWS_VAULT_BACKEND=pass
+export AWS_VAULT_PASS_PREFIX=aws-vault
+
 # Completion（fpath + compinit）
 [[ -d "$HOME/.zfunc" ]] && fpath+=("$HOME/.zfunc")
 autoload -U compinit
