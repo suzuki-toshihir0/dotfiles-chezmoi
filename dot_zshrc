@@ -32,7 +32,7 @@ export VOLTA_HOME="$HOME/.volta"
 export SSH_AUTH_SOCK=~/.1password/agent.sock
 
 # sudo askpass（Claude Codeなど非TTY環境でのGUIパスワード入力）
-export SUDO_ASKPASS=/usr/lib/ssh/x11-askpass
+export SUDO_ASKPASS=/usr/lib/ssh/x11-ssh-askpass
 
 # aws-vault
 export AWS_VAULT_BACKEND=pass
