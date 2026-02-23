@@ -10,3 +10,10 @@
 
 ## Visual & Design Rules
 - グラフやUIなどの視認性が重要な要素を作成する際は、必ず `cud-compliant-design` スキルをロードしてください。
+
+## PC環境のルール
+
+### dotfiles（chezmoi）
+- dotfiles は chezmoi で管理されている（`/home/suzuki/.local/share/chezmoi/`）
+- `~/.zshrc` や `~/.claude/CLAUDE.md` などを直接編集してはいけない。必ずソースファイルを編集して `chezmoi apply` で反映する
+- chezmoi リポジトリへの変更は **必ずPR経由**で main にマージする（直接 push 禁止）
