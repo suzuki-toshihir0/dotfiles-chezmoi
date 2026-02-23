@@ -31,6 +31,9 @@ export VOLTA_HOME="$HOME/.volta"
 # 1Password SSH Agent
 export SSH_AUTH_SOCK=~/.1password/agent.sock
 
+# sudo askpass（Claude Codeなど非TTY環境でのGUIパスワード入力）
+export SUDO_ASKPASS="$HOME/.local/bin/sudo-askpass"
+
 # aws-vault
 export AWS_VAULT_BACKEND=pass
 export AWS_VAULT_PASS_PREFIX=aws-vault
