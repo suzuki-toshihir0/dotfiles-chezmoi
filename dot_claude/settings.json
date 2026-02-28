@@ -1,10 +1,12 @@
 {
+  "model": "opusplan",
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "clangd-lsp@claude-plugins-official": true
+    "clangd-lsp@claude-plugins-official": true,
+    "aloud-code@suzuki-toshihir0": true
   },
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/statusline.sh"
+    "command": "npx -y @owloops/claude-powerline@1.19.0 --theme=custom --style=powerline"
   }
 }
