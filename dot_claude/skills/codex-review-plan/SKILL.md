@@ -14,6 +14,14 @@ allowed-tools: Bash, Read, Glob
 
 Claude Codeが作成したplan fileをOpenAI Codex CLIに送り、別のAIモデルの視点からレビューを受ける。
 
+## Plan モードでの利用
+
+このスキルは `disable-model-invocation: true` のため Skill ツール経由では呼び出せない。
+Plan モード中にユーザーからレビューを求められた場合は、**Bash ツールで直接 `codex exec` コマンドを実行する**こと。
+`codex exec --ephemeral -s read-only` はプロジェクトファイルを一切変更せず `/tmp/` に出力するだけの読み取り専用操作であり、Plan モードの制約に違反しない。
+
+Bash ツールが許可されない場合は、Plan モードを exit してから実行すること。
+
 ## 呼び出し例
 
 - `/codex-review-plan` — 最新のplan fileをデフォルトモデル（gpt-5.3-codex）でレビュー
