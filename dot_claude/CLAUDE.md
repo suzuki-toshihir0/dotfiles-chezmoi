@@ -11,6 +11,10 @@
 ## Visual & Design Rules
 - グラフやUIなどの視認性が重要な要素を作成する際は、必ず `cud-compliant-design` スキルをロードしてください。
 
+## 実装原則
+- プロダクトコード（継続的にメンテナンスされるコード）を新規実装する際は、t_wadaの推奨するTDD（Red→Green→Refactor）で進める
+- 使い捨てスクリプト・設定ファイル編集・dotfiles管理・相談対応など、プロダクトコード以外の作業はこの限りではない
+
 ## PC環境のルール
 
 ### dotfiles（chezmoi）
