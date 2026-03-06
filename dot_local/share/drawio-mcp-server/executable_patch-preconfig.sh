@@ -39,18 +39,24 @@ if [ ! -f "$PRECONFIG" ]; then
     exit 0
 fi
 
-# 既にパッチ済みかチェック（二重適用を防止）
-if grep -q 'defaultAdaptiveColors' "$PRECONFIG"; then
-    exit 0
-fi
-
-# DRAWIO_CONFIG = null; の行を設定オブジェクトに置換
-sed -i 's|^window\.DRAWIO_CONFIG = null;.*|window.DRAWIO_CONFIG = {\
+# DRAWIO_CONFIG パッチ適用（未適用の場合のみ）
+if ! grep -q 'defaultAdaptiveColors' "$PRECONFIG"; then
+    # DRAWIO_CONFIG = null; の行を設定オブジェクトに置換
+    sed -i 's|^window\.DRAWIO_CONFIG = null;.*|window.DRAWIO_CONFIG = {\
 \tdefaultAdaptiveColors: "none",\
 \tpageFormat: {width: 1169, height: 827}\
 };|' "$PRECONFIG"
 
-# ライトモード強制を末尾に追加
-echo "urlParams['dark'] = '0';" >> "$PRECONFIG"
+    # sed 置換が成功して defaultAdaptiveColors が入ったか検証
+    if ! grep -q 'defaultAdaptiveColors' "$PRECONFIG"; then
+        echo "patch-preconfig.sh: failed to patch DRAWIO_CONFIG in PreConfig.js" >&2
+        exit 1
+    fi
+fi
+
+# ライトモード強制を末尾に追加（既存行がない場合のみ）
+if ! grep -q "urlParams\['dark'\] = '0';" "$PRECONFIG"; then
+    echo "urlParams['dark'] = '0';" >> "$PRECONFIG"
+fi
 
 echo "patch-preconfig.sh: PreConfig.js patched successfully"

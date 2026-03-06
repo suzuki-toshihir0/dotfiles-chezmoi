@@ -41,7 +41,9 @@ npm install drawio-mcp-server@1.8.0
 ### 3. chezmoi apply + サービス有効化
 
 ```bash
-chezmoi apply ~/.config/systemd/user/drawio-mcp-server.service
+chezmoi apply \
+  ~/.config/systemd/user/drawio-mcp-server.service \
+  ~/.local/share/drawio-mcp-server/patch-preconfig.sh
 systemctl --user daemon-reload
 systemctl --user enable --now drawio-mcp-server.service
 ```
