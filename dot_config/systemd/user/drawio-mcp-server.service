@@ -1,0 +1,20 @@
+[Unit]
+Description=Draw.io MCP Server
+
+[Service]
+Type=simple
+Environment="VOLTA_HOME=%h/.volta"
+WorkingDirectory=%h/.local/share/drawio-mcp-server
+ExecStart=%h/.volta/bin/node \
+  %h/.local/share/drawio-mcp-server/node_modules/drawio-mcp-server/build/index.js \
+  --editor \
+  --http-port 24017 \
+  --transport http
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target
