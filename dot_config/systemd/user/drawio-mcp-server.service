@@ -1,0 +1,24 @@
+[Unit]
+Description=Draw.io MCP Server
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+Environment="VOLTA_HOME=%h/.volta"
+WorkingDirectory=%h/.local/share/drawio-mcp-server
+ExecStart=%h/.volta/bin/node \
+  %h/.local/share/drawio-mcp-server/node_modules/drawio-mcp-server/build/index.js \
+  --editor \
+  --http-port 24017 \
+  --transport http
+# draw.io エディタのデフォルト設定（用紙サイズ・配色など）をパッチする。
+# 詳細は patch-preconfig.sh 内のコメントを参照。
+# 先頭の '-' はスクリプト不在時にサービス起動をブロックしないための措置。
+ExecStartPost=-%h/.local/share/drawio-mcp-server/patch-preconfig.sh
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target
