@@ -10,6 +10,9 @@ ExecStart=%h/.volta/bin/node \
   --editor \
   --http-port 24017 \
   --transport http
+# draw.io エディタのデフォルト設定（用紙サイズ・配色など）をパッチする。
+# 詳細は patch-preconfig.sh 内のコメントを参照。
+ExecStartPost=%h/.local/share/drawio-mcp-server/patch-preconfig.sh
 Restart=on-failure
 RestartSec=5
 StartLimitIntervalSec=60
