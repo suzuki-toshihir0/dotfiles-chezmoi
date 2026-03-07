@@ -9,7 +9,7 @@
 - エラーメッセージやログの説明も日本語で提供
 
 ## Visual & Design Rules
-- グラフやUIなどの視認性が重要な要素を作成する際は、必ず `cud-compliant-design` スキルをロードしてください。
+- 色（HEXコード・RGB・色名）を指定・選択するすべての場面で、必ず `cud-compliant-design` スキルをロードしてください。
 
 ## 実装原則
 - プロダクトコード（継続的にメンテナンスされるコード）を新規実装する際は、t_wadaの推奨するTDD（Red→Green→Refactor）で進める
