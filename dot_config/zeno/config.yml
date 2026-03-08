@@ -1,0 +1,52 @@
+snippets:
+  - name: git
+    keyword: g
+    snippet: git
+
+  - name: git status
+    keyword: gs
+    snippet: git status --short --branch
+
+  - name: git diff
+    keyword: gd
+    snippet: git diff
+
+  - name: git log oneline
+    keyword: gl
+    snippet: git log --oneline
+
+  - name: tmux
+    keyword: t
+    snippet: tmux
+
+  - name: tmux attach
+    keyword: ta
+    snippet: tmux attach
+
+  - name: tmux kill-session
+    keyword: tks
+    snippet: tmux kill-session
+
+  - name: tmux new session
+    keyword: tn
+    snippet: "tmux new -s '{{session_name}}'"
+
+  - name: nvim
+    keyword: v
+    snippet: nvim
+
+  - name: echo -n
+    keyword: e
+    snippet: echo -n
+
+  - name: yank to clipboard
+    keyword: yank
+    snippet: xclip -selection clipboard
+
+  - name: wezterm imgcat
+    keyword: img
+    snippet: wezterm imgcat
+
+  - name: cprev
+    keyword: cr
+    snippet: cprev
