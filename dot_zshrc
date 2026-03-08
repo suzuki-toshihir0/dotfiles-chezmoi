@@ -57,17 +57,7 @@ else
   export SUDO_EDITOR='nvim'
 fi
 
-# エイリアス
-alias e="echo -n"
-alias g="git"
-alias t="tmux"
-alias ta="tmux attach"
-alias tks="tmux kill-session"
-alias tn="tmux new -s"
-alias v="nvim"
-alias yank='xclip -selection clipboard'
-alias img='wezterm imgcat'
-alias cr='cprev'
+# エイリアス（zeno.zsh の snippet に移行済み → ~/.config/zeno/config.yml）
 
 # 関数
 repos() {
@@ -97,16 +87,24 @@ ide() {
 }
 
 # プラグイン
-# zsh-syntax-highlighting は .zshrc の末尾付近で読み込む必要がある。
-# zle ウィジェットやフックを後から登録されたものも含めてラップするため、
-# compinit や他プラグインより後に source すること。
-# 参照: https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # fzf キーバインド・補完
 source /usr/share/fzf/key-bindings.zsh
 source /usr/share/fzf/completion.zsh
+
+# zeno.zsh（abbreviation 展開・fzf 補完）
+export ZENO_HOME="$HOME/.config/zeno"
+export ZENO_ENABLE_SOCK=1
+source "$HOME/.local/share/zeno.zsh/zeno.zsh"
+bindkey ' ' zeno-auto-snippet
+bindkey '^x' zeno-completion
+
+# zsh-syntax-highlighting は .zshrc の末尾付近で読み込む必要がある。
+# zle ウィジェットやフックを後から登録されたものも含めてラップするため、
+# compinit や他プラグインより後に source すること。
+# 参照: https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/INSTALL.md
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # ツール初期化
 [[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
