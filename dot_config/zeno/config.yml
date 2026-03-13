@@ -42,6 +42,8 @@ snippets:
   - name: yank to clipboard
     keyword: yank
     snippet: xclip -selection clipboard
+    context:
+      lbuffer: '.+\s'
 
   - name: wezterm imgcat
     keyword: img
