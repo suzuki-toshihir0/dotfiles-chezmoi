@@ -23,6 +23,11 @@
 
 ## PC環境のルール
 
+### SSH agent（1Password）
+- SSH agent は 1Password が提供している。1Password が起動していないと git push / git commit（署名付き）が失敗する
+- agent socket 関連のエラーが出たら、**「1Passwordを開いてください」とユーザーに促す**こと
+- `--no-gpg-sign` や署名スキップなど、署名なしへのフォールバックは禁止
+
 ### dotfiles（chezmoi）
 - dotfiles は chezmoi で管理されている（`/home/suzuki/.local/share/chezmoi/`）
 - `~/.zshrc` や `~/.claude/CLAUDE.md` などを直接編集してはいけない。必ずソースファイルを編集して `chezmoi apply` で反映する
