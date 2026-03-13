@@ -12,7 +12,7 @@
 - 色（HEXコード・RGB・色名）を指定・選択するすべての場面で、必ず `cud-compliant-design` スキルをロードしてください。
 
 ## 実装原則
-- プロダクトコード（継続的にメンテナンスされるコード）を新規実装する際は、t_wadaの推奨するTDD（Red→Green→Refactor）で進める
+- プロダクトコード（継続的にメンテナンスされるコード）を新規実装する際は、TDD（Red→Green→Refactor）で進める
 - 使い捨てスクリプト・設定ファイル編集・dotfiles管理・相談対応など、プロダクトコード以外の作業はこの限りではない
 
 ## 調査の姿勢
@@ -29,6 +29,6 @@
 - `--no-gpg-sign` や署名スキップなど、署名なしへのフォールバックは禁止
 
 ### dotfiles（chezmoi）
-- dotfiles は chezmoi で管理されている（`/home/suzuki/.local/share/chezmoi/`）
+- dotfiles は chezmoi で管理されている（`~/.local/share/chezmoi/`）
 - `~/.zshrc` や `~/.claude/CLAUDE.md` などを直接編集してはいけない。必ずソースファイルを編集して `chezmoi apply` で反映する
 - chezmoi リポジトリへの変更は **必ずPR経由**で main にマージする（直接 push 禁止）
