@@ -93,6 +93,9 @@ bash ~/.claude/skills/handle-copilot-review/scripts/check_copilot_comments.sh "$
 - `CHANGES_REQUESTED` → 変更要求あり、対応が必要
 - `PENDING` → レビュー進行中、待機
 
+**`/loop` での監視時:**
+マージ可能と判断した場合は、その旨を報告して `/loop` を停止する。
+
 #### resolve の場合
 
 1. まず `check` を実行して未 resolve スレッドを表示する
