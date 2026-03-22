@@ -81,6 +81,18 @@ bash ~/.claude/skills/copilot-review/scripts/check_copilot_comments.sh "$OWNER" 
 **`review_summaries`**（レビュー本文）:
 - あれば → レビュー全体のサマリも表示
 
+**マージ可能性の判断:**
+以下の**両方**を満たす場合のみ「マージ可能」と報告する:
+1. `copilot_review_status` が `PENDING` でない（レビューが完了している）
+2. `threads` が空（未 resolve のコメントがない）
+
+つまり:
+- `COMMENTED` + `threads` 空 → マージ可能
+- `APPROVED` → マージ可能
+- `COMMENTED` + `threads` あり → 対応が必要
+- `CHANGES_REQUESTED` → 変更要求あり、対応が必要
+- `PENDING` → レビュー進行中、待機
+
 #### resolve の場合
 
 1. まず `check` を実行して未 resolve スレッドを表示する
