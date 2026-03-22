@@ -25,19 +25,19 @@ if [ -z "$THREAD_IDS" ]; then
 fi
 
 while IFS= read -r THREAD_ID; do
-  ERROR_OUTPUT=$(gh api graphql \
+  if gh api graphql \
     -F threadId="$THREAD_ID" \
     -f query='
 mutation($threadId: ID!) {
   resolveReviewThread(input: {threadId: $threadId}) {
     thread { isResolved }
   }
-}' 2>&1) && {
+}' > /dev/null 2>&1; then
     RESOLVED=$((RESOLVED + 1))
-  } || {
+  else
     FAILED=$((FAILED + 1))
-    FAIL_DETAILS=$(echo "$FAIL_DETAILS" | jq -c --arg id "$THREAD_ID" --arg err "$ERROR_OUTPUT" '. + [{thread_id: $id, error: $err}]')
-  }
+    FAIL_DETAILS=$(echo "$FAIL_DETAILS" | jq -c --arg id "$THREAD_ID" '. + [{thread_id: $id}]')
+  fi
 done <<< "$THREAD_IDS"
 
 jq -n --argjson resolved "$RESOLVED" --argjson failed "$FAILED" --argjson failures "$FAIL_DETAILS" \

@@ -7,7 +7,7 @@ OWNER="${1:?Usage: $0 OWNER REPO PR_NUMBER}"
 REPO="${2:?Usage: $0 OWNER REPO PR_NUMBER}"
 PR_NUMBER="${3:?Usage: $0 OWNER REPO PR_NUMBER}"
 
-TMPDIR_WORK=$(mktemp -d)
+TMPDIR_WORK=$(mktemp -d -t copilot-review.XXXXXX)
 trap 'rm -rf "$TMPDIR_WORK"' EXIT
 
 # 1回目: reviewRequests, reviews, 最初のスレッドページを一括取得
@@ -44,6 +44,8 @@ query($owner: String!, $name: String!, $number: Int!) {
         }
         pageInfo { hasNextPage endCursor }
       }
+      # last: 30 は設計判断。個人リポジトリで Copilot 以降に30件超のレビューが
+      # 付くケースは想定外。万一取りこぼしても reviewRequests で PENDING は検出できる
       reviews(last: 30) {
         nodes {
           author { login }
