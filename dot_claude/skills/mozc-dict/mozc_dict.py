@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#   "protobuf>=6.0",
+#   "protobuf>=6.33.1",
 # ]
 # ///
 
@@ -137,10 +137,16 @@ def reload_mozc() -> None:
     """mozc_server を終了して辞書を反映させる（失敗しても続行）。"""
     import subprocess
     try:
-        subprocess.run(["killall", "mozc_server"], capture_output=True)
-        print("mozc_server を再起動しました。")
-    except Exception as e:
-        print(f"mozc_server の再起動に失敗しました（無視）: {e}", file=sys.stderr)
+        result = subprocess.run(["killall", "mozc_server"], capture_output=True, text=True)
+        if result.returncode == 0:
+            print("mozc_server を終了しました（自動的に再起動されます）。")
+        elif result.returncode == 1:
+            print("mozc_server プロセスは見つかりませんでした（すでに終了しています）。")
+        else:
+            msg = result.stderr.strip() if result.stderr else "理由不明"
+            print(f"mozc_server の終了に失敗しました（無視）: returncode={result.returncode}, {msg}", file=sys.stderr)
+    except (OSError, subprocess.SubprocessError) as e:
+        print(f"mozc_server の終了処理で例外が発生しました（無視）: {e}", file=sys.stderr)
 
 
 def open_lock(db_path: Path):
@@ -281,7 +287,7 @@ def cmd_import_tsv(args, db_path: Path) -> None:
                 e.key = yomi
                 e.value = word
                 e.pos = pos_val
-                existing.add((yomi, word, pos_val))
+            existing.add((yomi, word, pos_val))
             added += 1
 
         if not args.dry_run:
