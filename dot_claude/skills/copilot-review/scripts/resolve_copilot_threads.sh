@@ -16,24 +16,29 @@ RESULT=$("$SCRIPT_DIR/check_copilot_comments.sh" "$OWNER" "$REPO" "$PR_NUMBER")
 THREAD_IDS=$(echo "$RESULT" | jq -r '.threads[].thread_id')
 
 if [ -z "$THREAD_IDS" ]; then
-  echo '{"resolved": 0, "failed": 0, "message": "resolve対象のスレッドはありません"}'
+  echo '{"resolved": 0, "failed": 0, "failures": [], "message": "resolve対象のスレッドはありません"}'
   exit 0
 fi
 
 RESOLVED=0
 FAILED=0
+FAIL_DETAILS="[]"
 
 while IFS= read -r THREAD_ID; do
-  if gh api graphql -f query="
-mutation {
-  resolveReviewThread(input: {threadId: \"$THREAD_ID\"}) {
+  ERROR_OUTPUT=$(gh api graphql \
+    -F threadId="$THREAD_ID" \
+    -f query='
+mutation($threadId: ID!) {
+  resolveReviewThread(input: {threadId: $threadId}) {
     thread { isResolved }
   }
-}" > /dev/null 2>&1; then
+}' 2>&1) && {
     RESOLVED=$((RESOLVED + 1))
-  else
+  } || {
     FAILED=$((FAILED + 1))
-  fi
+    FAIL_DETAILS=$(echo "$FAIL_DETAILS" | jq -c --arg id "$THREAD_ID" --arg err "$ERROR_OUTPUT" '. + [{thread_id: $id, error: $err}]')
+  }
 done <<< "$THREAD_IDS"
 
-echo "{\"resolved\": $RESOLVED, \"failed\": $FAILED}"
+jq -n --argjson resolved "$RESOLVED" --argjson failed "$FAILED" --argjson failures "$FAIL_DETAILS" \
+  '{resolved: $resolved, failed: $failed, failures: $failures}'

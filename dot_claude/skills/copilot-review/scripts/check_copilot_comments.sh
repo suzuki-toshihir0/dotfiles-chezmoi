@@ -7,16 +7,26 @@ OWNER="${1:?Usage: $0 OWNER REPO PR_NUMBER}"
 REPO="${2:?Usage: $0 OWNER REPO PR_NUMBER}"
 PR_NUMBER="${3:?Usage: $0 OWNER REPO PR_NUMBER}"
 
-# GraphQL でレビュースレッド、レビュー本文、レビュワー情報を一括取得
-RESPONSE=$(gh api graphql \
-  -F owner="$OWNER" \
-  -F name="$REPO" \
-  -F number="$PR_NUMBER" \
-  -f query='
-query($owner: String!, $name: String!, $number: Int!) {
-  repository(owner: $owner, name: $name) {
-    pullRequest(number: $number) {
-      reviewRequests(first: 10) {
+# ページネーション付きでレビュースレッドを全件取得する
+ALL_THREADS="[]"
+CURSOR=""
+
+while true; do
+  if [ -z "$CURSOR" ]; then
+    AFTER_ARG=""
+  else
+    AFTER_ARG=", after: \"$CURSOR\""
+  fi
+
+  RESPONSE=$(gh api graphql \
+    -F owner="$OWNER" \
+    -F name="$REPO" \
+    -F number="$PR_NUMBER" \
+    -f query="
+query(\$owner: String!, \$name: String!, \$number: Int!) {
+  repository(owner: \$owner, name: \$name) {
+    pullRequest(number: \$number) {
+      reviewRequests(first: 30) {
         nodes {
           requestedReviewer {
             ... on User { login }
@@ -25,13 +35,13 @@ query($owner: String!, $name: String!, $number: Int!) {
           }
         }
       }
-      reviewThreads(first: 100) {
+      reviewThreads(first: 100${AFTER_ARG}) {
         nodes {
           id
           isResolved
           path
           line
-          comments(first: 5) {
+          comments(first: 1) {
             nodes {
               databaseId
               author { login }
@@ -41,7 +51,7 @@ query($owner: String!, $name: String!, $number: Int!) {
         }
         pageInfo { hasNextPage endCursor }
       }
-      reviews(first: 30) {
+      reviews(last: 30) {
         nodes {
           author { login }
           body
@@ -50,10 +60,23 @@ query($owner: String!, $name: String!, $number: Int!) {
       }
     }
   }
-}')
+}")
 
+  # スレッドを蓄積
+  PAGE_THREADS=$(echo "$RESPONSE" | jq '.data.repository.pullRequest.reviewThreads.nodes')
+  ALL_THREADS=$(echo "$ALL_THREADS" "$PAGE_THREADS" | jq -s '.[0] + .[1]')
+
+  # 次ページがあるか確認
+  HAS_NEXT=$(echo "$RESPONSE" | jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage')
+  if [ "$HAS_NEXT" != "true" ]; then
+    break
+  fi
+  CURSOR=$(echo "$RESPONSE" | jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor')
+done
+
+# 最後のレスポンスから reviews と reviewRequests を取得（ページングはスレッドのみ）
 # jq で Copilot コメントをフィルタして整形
-echo "$RESPONSE" | jq --argjson pr "$PR_NUMBER" '{
+echo "$RESPONSE" | jq --argjson pr "$PR_NUMBER" --argjson threads "$ALL_THREADS" '{
   pr_number: $pr,
   copilot_review_status: (
     if ([.data.repository.pullRequest.reviews.nodes[]
@@ -68,7 +91,7 @@ echo "$RESPONSE" | jq --argjson pr "$PR_NUMBER" '{
     end
   ),
   threads: [
-    .data.repository.pullRequest.reviewThreads.nodes[]
+    $threads[]
     | select(.isResolved == false)
     | select(.comments.nodes[0].author.login | test("opilot"; "i"))
     | {
@@ -89,6 +112,5 @@ echo "$RESPONSE" | jq --argjson pr "$PR_NUMBER" '{
         state: .state,
         body: .body
       }
-  ],
-  has_next_page: .data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage
+  ]
 }'

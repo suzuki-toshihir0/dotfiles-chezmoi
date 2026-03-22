@@ -71,6 +71,7 @@ bash ~/.claude/skills/copilot-review/scripts/check_copilot_comments.sh "$OWNER" 
 - `"COMMENTED"` — Copilot がレビュー完了（コメントあり）。コメント内容を報告する
 - `"APPROVED"` — Copilot が承認。指摘なし
 - `"CHANGES_REQUESTED"` — Copilot が変更を要求。コメント内容を報告する
+- `"DISMISSED"` — Copilot のレビューが却下された。再レビューが必要か確認する
 - `"NOT_REQUESTED"` — Copilot がレビュワーに設定されていない。「Copilot はこの PR のレビュワーに設定されていません。」と報告する
 
 **`threads`**（未 resolve のインラインコメント、`PENDING` 以外の場合に報告）:
