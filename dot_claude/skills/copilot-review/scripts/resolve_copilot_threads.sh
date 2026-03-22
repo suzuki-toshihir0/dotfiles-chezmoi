@@ -15,14 +15,14 @@ RESULT=$("$SCRIPT_DIR/check_copilot_comments.sh" "$OWNER" "$REPO" "$PR_NUMBER")
 # スレッド ID を抽出
 THREAD_IDS=$(echo "$RESULT" | jq -r '.threads[].thread_id')
 
-if [ -z "$THREAD_IDS" ]; then
-  echo '{"resolved": 0, "failed": 0, "failures": [], "message": "resolve対象のスレッドはありません"}'
-  exit 0
-fi
-
 RESOLVED=0
 FAILED=0
 FAIL_DETAILS="[]"
+
+if [ -z "$THREAD_IDS" ]; then
+  jq -n '{resolved: 0, failed: 0, failures: []}'
+  exit 0
+fi
 
 while IFS= read -r THREAD_ID; do
   ERROR_OUTPUT=$(gh api graphql \
