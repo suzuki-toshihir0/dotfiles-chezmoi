@@ -1,5 +1,5 @@
 ---
-name: copilot-review
+name: handle-copilot-review
 description: >-
   GitHub CopilotからのPRレビューコメントの確認・resolveを行う。
   PRのCopilotコメント対応、レビューコメントの確認、スレッドのresolve、
@@ -7,16 +7,16 @@ description: >-
 allowed-tools: Bash
 ---
 
-# copilot-review
+# handle-copilot-review
 
 GitHub Copilot からの PR レビューコメントを確認・resolve するスキル。
 
 ## 使い方
 
-- `/copilot-review` — 現在ブランチの PR の Copilot コメントを確認
-- `/copilot-review check [PR番号]` — 指定 PR の Copilot コメントを確認
-- `/copilot-review check owner/repo#PR番号` — 別リポジトリの PR を確認
-- `/copilot-review resolve [PR番号]` — Copilot スレッドを resolve
+- `/handle-copilot-review` — 現在ブランチの PR の Copilot コメントを確認
+- `/handle-copilot-review check [PR番号]` — 指定 PR の Copilot コメントを確認
+- `/handle-copilot-review check owner/repo#PR番号` — 別リポジトリの PR を確認
+- `/handle-copilot-review resolve [PR番号]` — Copilot スレッドを resolve
 
 ## 実行手順
 
@@ -56,12 +56,12 @@ fi
 
 ### Step 3: サブコマンドを実行する
 
-スクリプトのパスは `~/.claude/skills/copilot-review/scripts/` 配下にある。
+スクリプトのパスは `~/.claude/skills/handle-copilot-review/scripts/` 配下にある。
 
 #### check の場合
 
 ```bash
-bash ~/.claude/skills/copilot-review/scripts/check_copilot_comments.sh "$OWNER" "$REPO" "$PR_NUMBER"
+bash ~/.claude/skills/handle-copilot-review/scripts/check_copilot_comments.sh "$OWNER" "$REPO" "$PR_NUMBER"
 ```
 
 出力はJSON。**まず `copilot_review_status` を確認し、状態に応じて報告内容を変える**:
@@ -101,7 +101,7 @@ bash ~/.claude/skills/copilot-review/scripts/check_copilot_comments.sh "$OWNER" 
 4. リプライは不要。修正はコードで示し、対応不要の判断はコードコメントで示す
 5. ユーザーに確認を取ってから resolve を実行する（`/loop` から呼ばれた場合は resolve しない）:
 ```bash
-bash ~/.claude/skills/copilot-review/scripts/resolve_copilot_threads.sh "$OWNER" "$REPO" "$PR_NUMBER"
+bash ~/.claude/skills/handle-copilot-review/scripts/resolve_copilot_threads.sh "$OWNER" "$REPO" "$PR_NUMBER"
 ```
 
 ## API に関する重要な注意
