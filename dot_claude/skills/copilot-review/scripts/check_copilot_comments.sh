@@ -78,15 +78,16 @@ done
 # jq で Copilot コメントをフィルタして整形
 echo "$RESPONSE" | jq --argjson pr "$PR_NUMBER" --argjson threads "$ALL_THREADS" '{
   pr_number: $pr,
+  # reviewRequests を最優先でチェック: 再レビュー中なら過去の完了状態より PENDING が正しい
   copilot_review_status: (
-    if ([.data.repository.pullRequest.reviews.nodes[]
-         | select(.author.login | test("opilot"; "i"))] | length > 0)
+    if ([.data.repository.pullRequest.reviewRequests.nodes[]
+         | select(.requestedReviewer.login // .requestedReviewer.name | test("opilot"; "i"))] | length > 0)
+    then "PENDING"
+    elif ([.data.repository.pullRequest.reviews.nodes[]
+           | select(.author.login | test("opilot"; "i"))] | length > 0)
     then ([.data.repository.pullRequest.reviews.nodes[]
            | select(.author.login | test("opilot"; "i"))
            | .state] | last)
-    elif ([.data.repository.pullRequest.reviewRequests.nodes[]
-           | select(.requestedReviewer.login // .requestedReviewer.name | test("opilot"; "i"))] | length > 0)
-    then "PENDING"
     else "NOT_REQUESTED"
     end
   ),
