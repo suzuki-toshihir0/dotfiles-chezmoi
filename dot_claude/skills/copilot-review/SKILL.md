@@ -1,0 +1,83 @@
+---
+name: copilot-review
+description: >-
+  GitHub CopilotからのPRレビューコメントの確認・resolveを行う。
+  PRのCopilotコメント対応、レビューコメントの確認、スレッドのresolve、
+  `/loop` での監視に使用する。
+allowed-tools: Bash
+---
+
+# copilot-review
+
+GitHub Copilot からの PR レビューコメントを確認・resolve するスキル。
+
+## 使い方
+
+- `/copilot-review` — 現在ブランチの PR の Copilot コメントを確認
+- `/copilot-review check [PR番号]` — 指定 PR の Copilot コメントを確認
+- `/copilot-review resolve [PR番号]` — Copilot スレッドを resolve
+
+## 実行手順
+
+### Step 1: 引数を解析する
+
+`$ARGUMENTS` を解析する:
+- 第1引数が `check` or `resolve` → サブコマンドとして使用。第2引数があれば PR 番号
+- 第1引数が数字 → PR 番号として使用。サブコマンドは `check`
+- 引数なし → サブコマンドは `check`、PR 番号は自動特定
+
+### Step 2: リポジトリ情報と PR 番号を取得する
+
+```bash
+# リポジトリの owner/name を取得
+OWNER_REPO=$(gh repo view --json owner,name -q '.owner.login + " " + .name')
+OWNER=$(echo "$OWNER_REPO" | cut -d' ' -f1)
+REPO=$(echo "$OWNER_REPO" | cut -d' ' -f2)
+
+# PR番号が未指定の場合、現在ブランチの PR を特定
+PR_NUMBER=$(gh pr view --json number -q '.number')
+```
+
+### Step 3: サブコマンドを実行する
+
+スクリプトのパスは `~/.claude/skills/copilot-review/scripts/` 配下にある。
+
+#### check の場合
+
+```bash
+bash ~/.claude/skills/copilot-review/scripts/check_copilot_comments.sh "$OWNER" "$REPO" "$PR_NUMBER"
+```
+
+出力はJSON。**まず `copilot_review_status` を確認し、状態に応じて報告内容を変える**:
+
+**`copilot_review_status`**（Copilot のレビュー状態）:
+- `"PENDING"` — **Copilot がレビュー中。まだ完了していない。** 「Copilot のレビューが進行中です。完了を待っています。」と報告し、コメントの有無は報告しない（まだ増える可能性がある）
+- `"COMMENTED"` — Copilot がレビュー完了（コメントあり）。コメント内容を報告する
+- `"APPROVED"` — Copilot が承認。指摘なし
+- `"CHANGES_REQUESTED"` — Copilot が変更を要求。コメント内容を報告する
+- `"NOT_REQUESTED"` — Copilot がレビュワーに設定されていない。「Copilot はこの PR のレビュワーに設定されていません。」と報告する
+
+**`threads`**（未 resolve のインラインコメント、`PENDING` 以外の場合に報告）:
+- 空 → 「Copilot からの未 resolve コメントはありません。」
+- 要素あり → 各コメントのファイルパス・行番号・本文を表示
+
+**`review_summaries`**（レビュー本文）:
+- あれば → レビュー全体のサマリも表示
+
+#### resolve の場合
+
+1. まず `check` を実行して未 resolve スレッドを表示する
+2. 未 resolve スレッドがなければ「resolve 対象のスレッドはありません。」と報告して終了
+3. 未 resolve スレッドがあればユーザーに確認を取る（`/loop` から呼ばれた場合は resolve しない）
+4. 確認が取れたら:
+```bash
+bash ~/.claude/skills/copilot-review/scripts/resolve_copilot_threads.sh "$OWNER" "$REPO" "$PR_NUMBER"
+```
+
+## API に関する重要な注意
+
+以下の知識はスクリプトに実装済みだが、手動で API を叩く場合にも守ること:
+
+1. **コメント取得には GraphQL を使う**。REST API `pulls/{number}/comments` はインラインコメントのみで、レビュー本文（Copilot の PR overview 等）は取得できない
+2. **スレッドの resolve には GraphQL mutation が必須**。REST API では resolve できない。`resolveReviewThread(input: {threadId: "..."})` を使う
+3. **Copilot の識別**: author の login 名に `opilot`（大文字小文字不問）を含むかで判定する。`Copilot`、`copilot-pull-request-reviewer` 等の変種に対応するため
