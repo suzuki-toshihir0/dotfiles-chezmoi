@@ -86,7 +86,8 @@ bash ~/.claude/skills/copilot-review/scripts/check_copilot_comments.sh "$OWNER" 
 1. まず `check` を実行して未 resolve スレッドを表示する
 2. 未 resolve スレッドがなければ「resolve 対象のスレッドはありません。」と報告して終了
 3. 未 resolve スレッドがあればユーザーに確認を取る（`/loop` から呼ばれた場合は resolve しない）
-4. 確認が取れたら:
+4. **対応不要と判断した指摘には、コードコメントで意図を残すこと。** 修正が必要な指摘は黙って修正すればよいが、修正不要と判断した場合にコードを一切変更しないと、次回pushでCopilotから同じ指摘が再発する。「なぜそう書いているのか」をコードコメントとして残すことで、Copilotが文脈を理解し再指摘を控えるようになる
+5. 確認が取れたら:
 ```bash
 bash ~/.claude/skills/copilot-review/scripts/resolve_copilot_threads.sh "$OWNER" "$REPO" "$PR_NUMBER"
 ```
