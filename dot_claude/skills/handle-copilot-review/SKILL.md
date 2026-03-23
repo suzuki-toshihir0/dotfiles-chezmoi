@@ -82,19 +82,46 @@ bash ~/.claude/skills/handle-copilot-review/scripts/check_copilot_comments.sh "$
 - あれば → レビュー全体のサマリも表示
 
 **マージ可能性の判断:**
-以下の**両方**を満たす場合のみ「マージ可能」と報告する:
+
+Copilot レビューの条件を満たしたら、**ワークフローの状態も確認する**:
+
+```bash
+bash ~/.claude/skills/handle-copilot-review/scripts/check_workflow_status.sh "$OWNER" "$REPO" "$PR_NUMBER"
+```
+
+出力は JSON。`overall_status` で判断する:
+- `"SUCCESS"` — 全ワークフロー成功
+- `"IN_PROGRESS"` — まだ実行中のワークフローがある
+- `"FAILED"` — 失敗したワークフローがある。`workflow_runs` から失敗したものを報告する
+- `"NO_WORKFLOWS"` — ワークフローなし（チェック不要）
+- `"MIXED"` — 成功以外の結論（cancelled 等）が混在。詳細を報告する
+
+以下の**すべて**を満たす場合のみ「マージ可能」と報告する:
 1. `copilot_review_status` が `PENDING` でない（レビューが完了している）
 2. `threads` が空（未 resolve のコメントがない）
+3. `overall_status` が `SUCCESS` または `NO_WORKFLOWS`（ワークフローが完了している）
 
 つまり:
-- `COMMENTED` + `threads` 空 → マージ可能
-- `APPROVED` → マージ可能
+- `APPROVED` + ワークフロー成功 → マージ可能
+- `COMMENTED` + `threads` 空 + ワークフロー成功 → マージ可能
 - `COMMENTED` + `threads` あり → 対応が必要
 - `CHANGES_REQUESTED` → 変更要求あり、対応が必要
 - `PENDING` → レビュー進行中、待機
+- レビュー完了 + ワークフロー実行中 → 「Copilot レビューは完了。ワークフローの完了を待っています。」
+- レビュー完了 + ワークフロー失敗 → 「ワークフローが失敗しています。」＋失敗ワークフローの名前と URL を報告
 
 **`/loop` での監視時:**
-マージ可能と判断した場合は、その旨を報告して `/loop` を停止する。
+
+監視は以下の2段階で行う:
+
+1. **Copilot レビュー監視フェーズ**: Copilot のレビュー完了を待つ（従来通り）
+2. **ワークフロー監視フェーズ**: レビュー完了後、ワークフローがまだ実行中なら完了を待つ
+
+Copilot レビューが完了し、未 resolve コメントもない状態になったら、Copilot の監視は終了する。
+その時点でワークフローを確認し:
+- ワークフローも完了（成功） → マージ可能と報告して `/loop` を停止
+- ワークフローが実行中 → 「Copilot レビュー完了。ワークフローの完了を待っています。」と報告し、以降はワークフロー状態のみを監視する
+- ワークフローが失敗 → 失敗を報告して `/loop` を停止（ユーザーの判断が必要なため）
 
 #### resolve の場合
 
