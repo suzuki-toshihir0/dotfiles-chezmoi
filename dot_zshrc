@@ -80,7 +80,7 @@ worktrees() {
 ide() {
   local cwd=$(pwd)
   local right_pane=$(wezterm cli split-pane --right --percent 50)
-  printf 'cd %q && claude\n' "$cwd" | wezterm cli send-text --pane-id "$right_pane" --no-paste
+  printf 'cd %q && claude --enable-auto-mode\n' "$cwd" | wezterm cli send-text --pane-id "$right_pane" --no-paste
   local bottom_pane=$(wezterm cli split-pane --bottom --percent 50)
   printf 'cd %q\n' "$cwd" | wezterm cli send-text --pane-id "$bottom_pane" --no-paste
   nvim .
@@ -115,5 +115,5 @@ eval "$(starship init zsh)"
 
 # helper: /home/suzuki/repos/helper で Claude Code を起動
 helper() {
-    (cd /home/suzuki/repos/helper && claude "$@")
+    (cd /home/suzuki/repos/helper && claude --enable-auto-mode "$@")
 }
