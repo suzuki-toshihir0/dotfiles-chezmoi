@@ -3,7 +3,10 @@ local config = {}
 
 config.color_scheme = 'Catppuccin Mocha'
 
-config.font = wezterm.font 'HackGen Console NF'
+config.font = wezterm.font_with_fallback {
+  'HackGen Console NF',
+  'Noto Sans Symbols 2',
+}
 config.font_size = 12.0
 
 config.window_background_opacity = 0.85
