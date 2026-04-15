@@ -23,7 +23,7 @@
 
 ## PR Review Comment の対応ルール
 
-- GitHub Copilot（bot）からの PR review comment に対応した場合、修正を push した後にそのコメントを resolve する
+- レビューボット（Copilot, reviewdog, Devin AI 等）からの PR review comment に対応した場合、修正を push した後にそのコメントを resolve する
 - 対応不要と判断した場合は、理由をリプライしてから resolve する
 
 ## PC環境のルール

@@ -1,0 +1,9 @@
+{
+  "ambiguous_logins": {
+    "github-actions": [
+      {"name": "reviewdog", "body_pattern": "__reviewdog__"}
+    ]
+  },
+  "auto_resolve": ["copilot-pull-request-reviewer", "reviewdog"],
+  "ignore_logins": []
+}
