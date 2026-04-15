@@ -139,15 +139,16 @@ jq -n --argjson pr "$PR_NUMBER" \
       | select(. as $l | ($bots[0].ambiguous_logins[$l] // null) == null)
     ]) as $pending |
 
-    # reviews から Bot login と最終 state を収集
+    # reviews から Bot login ごとの最終 state を収集
+    # reduce で構築: 出現順に上書きするため最後の state が残る
     ([$reviews[0].nodes[]
       | select(.author.__typename == "Bot")
       | select((.author.login // "") as $l |
           [$bots[0].ignore_logins[] | select(. == $l)] | length == 0)
       | select((.author.login // "") as $l |
           ($bots[0].ambiguous_logins[$l] // null) == null)
-      | {login: .author.login, state: .state}
-    ] | group_by(.login) | map({key: .[0].login, value: .[-1].state})) as $reviewed |
+      | {key: .author.login, value: .state}
+    ] | reduce .[] as $r ({}; .[$r.key] = $r.value) | to_entries) as $reviewed |
 
     # マージ: PENDING 優先
     ([$pending[], ($reviewed | .[].key)] | unique) | map(

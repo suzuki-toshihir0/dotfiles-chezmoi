@@ -143,14 +143,13 @@ bash ~/.claude/skills/handle-bot-review/scripts/check_workflow_status.sh "$OWNER
 
 1. まず `check` を実行して未 resolve スレッドを表示する
 2. 未 resolve スレッドがなければ「resolve 対象のスレッドはありません。」と報告して終了
-3. `auto_resolve` 対象のボット（bots.json で定義。現在: Copilot, reviewdog）のスレッドに対して:
+3. `auto_resolve` **対象外**のボット（Devin 等）のスレッドがある場合:
+   - 「以下のスレッドは auto_resolve 対象外です。対応方針を確認してください。」と報告する（resolve はしない）
+4. `auto_resolve` 対象のボット（bots.json で定義。現在: Copilot, reviewdog）のスレッドに対して:
    - 修正が必要なものはコードを修正する
    - 対応不要と判断したものは、**コードコメントで設計判断を残す**（次回pushで同じ指摘が再発するのを防ぐため）
-4. `auto_resolve` **対象外**のボット（Devin 等）のスレッドがある場合:
-   - 「以下のスレッドは auto_resolve 対象外です。対応方針を確認してください。」と報告する
-   - resolve は実行しない
 5. リプライは不要。修正はコードで示し、対応不要の判断はコードコメントで示す
-6. resolve を実行する（auto_resolve 対象のみ。ユーザーへの確認は不要）:
+6. resolve を実行する（auto_resolve 対象のみ resolve される。対象外は自動的にスキップ。ユーザーへの確認は不要）:
 ```bash
 bash ~/.claude/skills/handle-bot-review/scripts/resolve_bot_threads.sh "$OWNER" "$REPO" "$PR_NUMBER"
 ```
