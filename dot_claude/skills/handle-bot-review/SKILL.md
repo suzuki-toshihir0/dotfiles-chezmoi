@@ -77,16 +77,17 @@ bash ~/.claude/skills/handle-bot-review/scripts/check_bot_comments.sh "$OWNER" "
 
 **`review_statuses`**（ボットごとのレビュー状態マップ）:
 
-review-request システムを使うボット（Copilot 等）のみ含まれる。
+`reviewRequests` または `reviews` に Bot として登場するもの全てから自動生成される。
+`ambiguous_logins`（github-actions 等）と `ignore_logins` のボットは除外される。
 各エントリのキーはボットの login、値はレビュー状態:
-- `"PENDING"` — レビュー中。「ボットのレビューが進行中です。」と報告
+- `"PENDING"` — レビュー中（`reviewRequests` に存在）。「ボットのレビューが進行中です。」と報告
 - `"COMMENTED"` — レビュー完了（コメントあり）
 - `"APPROVED"` — 承認
 - `"CHANGES_REQUESTED"` — 変更要求
 - `"DISMISSED"` — 却下
 
-review_statuses に含まれないボット（reviewdog, Devin 等）は review-request を使わないため、
-PENDING 判定の対象外。
+`PENDING` は `reviewRequests` に存在するボットのみ。reviewdog 等の `ambiguous_logins` ボットは
+review-request システムを使わないため `review_statuses` に含まれない。
 
 **`threads`**（未 resolve のボットスレッド）:
 
