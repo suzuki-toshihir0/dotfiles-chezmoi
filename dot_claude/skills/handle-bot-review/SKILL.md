@@ -155,6 +155,7 @@ bash ~/.claude/skills/handle-bot-review/scripts/check_workflow_status.sh "$OWNER
 bash ~/.claude/skills/handle-bot-review/scripts/resolve_bot_threads.sh "$OWNER" "$REPO" "$PR_NUMBER"
 ```
 7. 出力の `skipped` フィールドに auto_resolve 対象外のスレッド情報がある場合は報告する
+8. **定期実行（`/loop` 等）で呼ばれている場合**: resolve 完了後、`check` の監視フローに移行する。push により新たな CI が走り始め、ボットが再レビューする可能性もあるため、ボットレビュー + ワークフローの2段階監視を継続する
 
 ## API に関する重要な注意
 
