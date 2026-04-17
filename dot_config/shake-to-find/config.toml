@@ -1,0 +1,27 @@
+# shake-to-find 設定ファイル
+# 変更後は `systemctl --user restart shake-to-find` で反映
+
+[shake]
+# 判定に使う時間窓 (ms)。直近このミリ秒分の軌跡で振りを検出する
+window_ms = 400
+# 軌跡長 / 変位 の閾値。大きいほど「折り返し回数」が多い＝振りと判定
+ratio_threshold = 4.0
+# 最小軌跡長 (px)。ゆっくりした動きを除外
+min_path_px = 300.0
+# 最小平均速度 (px/s)。マウスをゆっくり送っただけの誤爆を除外
+min_avg_speed = 600.0
+# 連鎖発動防止のクールダウン (ms)
+cooldown_ms = 1500
+
+[cursor]
+# xcursor theme 名。通常のカーソルと別色を指定して「色変化」演出にする
+# 通常 = Catppuccin Mocha Blue、shake発動時 = Mauve で拡大
+theme = "catppuccin-mocha-mauve-cursors"
+# 使うカーソル形状
+shape = "left_ptr"
+# ベースサイズ (px)。0 にすると利用可能な最大サイズ画像を使う（ジャギを減らすため推奨）
+base_size = 0
+# ピーク倍率 (base_size * peak_scale まで拡大)
+peak_scale = 2.5
+# アニメーション全長 (ms)
+duration_ms = 2000
