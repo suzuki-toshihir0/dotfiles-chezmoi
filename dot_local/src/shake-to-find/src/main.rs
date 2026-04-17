@@ -101,9 +101,14 @@ struct Config {
 }
 
 fn load_config() -> Config {
-    let path: PathBuf = dirs::config_dir()
-        .unwrap_or_else(|| PathBuf::from("/tmp"))
-        .join("shake-to-find/config.toml");
+    // config_dir が決まらない環境（XDG も HOME もない）ではファイル読み込みを諦めて
+    // デフォルト設定で起動する。/tmp など world-writable なパスを参照して、
+    // 他ユーザーの影響を受けないようにする。
+    let Some(config_dir) = dirs::config_dir() else {
+        eprintln!("[info] no config directory available — using defaults");
+        return Config::default();
+    };
+    let path: PathBuf = config_dir.join("shake-to-find/config.toml");
     match std::fs::read_to_string(&path) {
         Ok(s) => match toml::from_str::<Config>(&s) {
             Ok(c) => {
@@ -317,19 +322,42 @@ fn show_overlay<C: Connection>(
     let screen = &conn.setup().roots[screen_idx];
     let root = screen.root;
 
-    // ピーク画像サイズで window を作り、その中で描画を変える。
+    let win = conn.generate_id()?;
+    let gc = conn.generate_id()?;
+
+    // 途中のエラーで本物のカーソルが隠れたまま残らないよう、hide_cursor 後の処理は
+    // 別関数に閉じ込めて、戻り値に関わらず最後に show_cursor / destroy_window / free_gc
+    // を必ず呼ぶ。ID が未使用な場合は X サーバ側でエラーになるが握り潰す。
+    let result = run_overlay(conn, res, scaled_frames, duration_ms, root, win, gc);
+
+    let _ = conn.xfixes_show_cursor(root);
+    let _ = conn.destroy_window(win);
+    let _ = conn.free_gc(gc);
+    let _ = conn.flush();
+
+    result
+}
+
+fn run_overlay<C: Connection>(
+    conn: &C,
+    res: &OverlayResources,
+    scaled_frames: &[CursorImage],
+    duration_ms: u64,
+    root: u32,
+    win: u32,
+    gc: u32,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // ピーク画像サイズで window を作り、その中で描画を差し替える
     let peak = scaled_frames.last().unwrap();
     let ww = peak.width as u16;
     let wh = peak.height as u16;
     let peak_xhot = peak.xhot as i32;
     let peak_yhot = peak.yhot as i32;
 
-    // 初期位置は現在のポインタ位置
     let initial = conn.query_pointer(root)?.reply()?;
     let initial_wx = initial.root_x as i32 - peak_xhot;
     let initial_wy = initial.root_y as i32 - peak_yhot;
 
-    let win = conn.generate_id()?;
     let values = CreateWindowAux::new()
         .background_pixel(0)
         .border_pixel(0)
@@ -352,12 +380,8 @@ fn show_overlay<C: Connection>(
 
     // click-through: input shape を空に
     conn.shape_rectangles(SO::SET, SK::INPUT, ClipOrdering::UNSORTED, win, 0, 0, &[])?;
-
-    let gc = conn.generate_id()?;
     conn.create_gc(gc, win, &CreateGCAux::new())?;
-
     conn.map_window(win)?;
-    // 本物のカーソルを隠す（overlay と二重表示になるのを防ぐ）
     conn.xfixes_hide_cursor(root)?;
     conn.flush()?;
 
@@ -365,21 +389,17 @@ fn show_overlay<C: Connection>(
     let frame_interval = Duration::from_millis(FRAME_INTERVAL_MS);
     let total = Duration::from_millis(duration_ms);
     let start = Instant::now();
-    // アニメ中の alpha 適用バッファを 1 回だけ確保して使い回す（毎フレーム allocate を避ける）
     let mut frame_buf: Vec<u8> = Vec::with_capacity(peak.bgra.len());
 
-    loop {
-        let elapsed = start.elapsed();
-        if elapsed >= total {
-            break;
-        }
-        let t_ms = elapsed.as_millis() as u64;
+    while start.elapsed() < total {
+        let t_ms = start.elapsed().as_millis() as u64;
         let (scale, alpha) = frame_params(t_ms, duration_ms, peak_scale);
         let img = pick_frame(scaled_frames, scale);
         apply_alpha_into(img, alpha, &mut frame_buf);
 
-        // マウス位置を毎フレーム取得して window を追従移動。
-        // window 左上 = pointer - peak_hot （peak hot と pointer を一致させる）
+        // マウスを振った後もオーバーレイが追従するよう毎フレーム query_pointer で座標を取る。
+        // 20ms 周期・μs オーダの round-trip なので実測で CPU / X server 負荷は無視できる。
+        // RawMotion delta を積分する手もあるが相対誤差が蓄積しうるため採用見送り。
         let pointer = conn.query_pointer(root)?.reply()?;
         let wx = pointer.root_x as i32 - peak_xhot;
         let wy = pointer.root_y as i32 - peak_yhot;
@@ -407,11 +427,6 @@ fn show_overlay<C: Connection>(
         thread::sleep(frame_interval);
     }
 
-    conn.destroy_window(win)?;
-    conn.free_gc(gc)?;
-    // 本物のカーソルを戻す
-    conn.xfixes_show_cursor(root)?;
-    conn.flush()?;
     Ok(())
 }
 
@@ -461,7 +476,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             scale_bilinear(&base, factor)
         })
         .collect();
-    // pick_frame が target_scale に対し昇順で二分する前提で sort
+    // `first()` が base、`last()` が peak になるよう幅の昇順にそろえる
+    // （`peak_scale_of` と `pick_frame` がこの順序前提）
     scaled_frames.sort_by(|a, b| a.width.cmp(&b.width));
     eprintln!(
         "[info] scaled frames: {}..{} px",

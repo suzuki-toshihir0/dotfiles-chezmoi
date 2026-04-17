@@ -1,6 +1,5 @@
 [Unit]
 Description=Shake-to-find cursor highlight (Catppuccin)
-Documentation=https://github.com/arp242/find-cursor
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
