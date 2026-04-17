@@ -1,1 +1,5 @@
 .claude/
+
+# Rust build artifacts from chezmoi-managed source trees (e.g. shake-to-find)
+**/target/
+**/Cargo.lock

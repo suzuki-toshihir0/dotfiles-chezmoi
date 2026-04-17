@@ -1,0 +1,18 @@
+[package]
+name = "shake-to-find"
+version = "0.1.0"
+edition = "2024"
+description = "Shake your mouse to locate the cursor (Catppuccin Mocha)"
+
+[dependencies]
+x11rb = { version = "0.13", features = ["xinput", "shape", "xfixes"] }
+xcursor = "0.3"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+dirs = "5"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
+codegen-units = 1

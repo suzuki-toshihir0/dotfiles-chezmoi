@@ -1,0 +1,3 @@
+# Rust build artifacts under any src tree (e.g. dot_local/src/shake-to-find)
+**/target/
+**/Cargo.lock

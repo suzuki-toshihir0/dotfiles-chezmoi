@@ -1,0 +1,18 @@
+[Unit]
+Description=Shake-to-find cursor highlight (Catppuccin)
+Documentation=https://github.com/arp242/find-cursor
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+# X11 接続に必要な環境変数を明示（XFCE は graphical-session.target を使わないため）
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=%h/.Xauthority
+ExecStart=%h/.local/bin/shake-to-find
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

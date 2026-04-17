@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# shake-to-find のビルド＆インストール。
+# 以下のハッシュが変わると chezmoi apply 時に再実行される。
+# Cargo.toml: {{ include "dot_local/src/shake-to-find/Cargo.toml" | sha256sum }}
+# main.rs:    {{ include "dot_local/src/shake-to-find/src/main.rs" | sha256sum }}
+# service:    {{ include "dot_config/systemd/user/shake-to-find.service" | sha256sum }}
+
+set -euo pipefail
+
+SRC="$HOME/.local/src/shake-to-find"
+BIN="$HOME/.local/bin/shake-to-find"
+
+if [ ! -d "$SRC" ]; then
+    echo "[shake-to-find] source dir not found: $SRC" >&2
+    exit 1
+fi
+
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "[shake-to-find] cargo not found; install rust toolchain first" >&2
+    exit 1
+fi
+
+echo "[shake-to-find] cargo build --release"
+cd "$SRC"
+cargo build --release --quiet
+
+mkdir -p "$HOME/.local/bin"
+ln -sfn "$SRC/target/release/shake-to-find" "$BIN"
+echo "[shake-to-find] installed: $BIN"
+
+systemctl --user daemon-reload
+
+if systemctl --user is-enabled shake-to-find.service >/dev/null 2>&1; then
+    echo "[shake-to-find] restarting service"
+    systemctl --user restart shake-to-find.service
+else
+    echo "[shake-to-find] service not enabled yet. to enable:"
+    echo "    systemctl --user enable --now shake-to-find.service"
+fi
