@@ -3,3 +3,7 @@
 # ここの `**/Cargo.lock` を外して該当クレート側で個別に管理する。
 **/target/
 **/Cargo.lock
+
+# Node.js dependencies (e.g. dot_claude/skills/polish-ja/textlint/node_modules)
+# package-lock.json は依存固定のため同梱する
+**/node_modules/

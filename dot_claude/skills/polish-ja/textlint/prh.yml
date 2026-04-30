@@ -1,0 +1,17 @@
+version: 1
+
+# polish-ja skill 用の prh 辞書
+# AI出力でよく見る表現の補強。preset-ai-writing で拾えない/補強したい語のみ。
+# 英単語ベタ書き → カナ の置換は preset-ai-writing と sub agent に任せる
+# （日本語境界での単語マッチが脆いため、prh では扱わない）
+
+rules:
+  # AI頻出のhype語の言い換え
+  - expected: 活用
+    pattern: レバレッジ
+  - expected: 円滑
+    pattern: シームレス
+
+  # 過剰敬語
+  - expected: します
+    pattern: させていただきます
