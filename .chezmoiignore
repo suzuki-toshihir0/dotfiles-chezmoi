@@ -6,4 +6,7 @@
 
 # Claude Code が /effort などで動的に書き換えるため、各PCでローカル管理する。
 # 永続化したい設定（例: CLAUDE_CODE_EFFORT_LEVEL=max）は env ブロック等に直接書く。
+# パターンは target path（= 配置先 $HOME 配下のパス）でマッチするので
+# `.claude/settings.json` で正しい（source path の `dot_claude/...` ではない）。
+# 検証: `chezmoi add -n ~/.claude/settings.json` → "warning: ignoring .claude/settings.json"
 .claude/settings.json
