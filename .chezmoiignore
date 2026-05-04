@@ -3,3 +3,7 @@
 # ここの `**/Cargo.lock` を外して該当クレート側で個別に管理する。
 **/target/
 **/Cargo.lock
+
+# Claude Code が /effort などで動的に書き換えるため、各PCでローカル管理する。
+# 永続化したい設定（例: CLAUDE_CODE_EFFORT_LEVEL=max）は env ブロック等に直接書く。
+.claude/settings.json
