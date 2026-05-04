@@ -1,3 +1,13 @@
 [preview]
 max_width = 3840
 max_height = 2160
+
+[opener]
+pdf-tui = [
+  { run = 'tdf "$1"', block = true, desc = "Open with tdf (TUI)" },
+]
+
+[open]
+prepend_rules = [
+  { mime = "application/pdf", use = "pdf-tui" },
+]
