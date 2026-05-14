@@ -1,0 +1,29 @@
+# Ghostty 設定 (~/.wezterm.lua からの移植)
+#
+# 設定リファレンス: ghostty +show-config --default --docs
+# キーバインド一覧 : ghostty +list-keybinds
+
+# テーマ
+theme = Catppuccin Mocha
+
+# フォント (上から順にフォールバック)
+font-family = HackGen Console NF
+font-family = Noto Sans Symbols 2
+font-size = 12
+
+# 背景透過
+background-opacity = 0.85
+
+# マウス選択でそのまま CLIPBOARD にコピー (Ctrl+V でそのまま貼れる)
+copy-on-select = clipboard
+
+# フォントレンダリング (WezTerm と並べてストロークが細く見えるのを補正)
+# 既定の `...,autohint,light` から `light` を外し、light hinting を無効にして
+# 線を保持する側に寄せる。font-thicken は macOS 専用のため Linux では使えない。
+freetype-load-flags = hinting,no-force-autohint,no-monochrome,autohint
+
+# Leader key + chord で WezTerm 同等の split を実現
+# ctrl+a → - : 上下に分割 (新ペインは下)
+keybind = ctrl+a>minus=new_split:down
+# ctrl+a → | (= shift+backslash) : 左右に分割 (新ペインは右)
+keybind = ctrl+a>shift+backslash=new_split:right
