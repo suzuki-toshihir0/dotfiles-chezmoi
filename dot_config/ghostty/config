@@ -17,6 +17,11 @@ background-opacity = 0.85
 # マウス選択でそのまま CLIPBOARD にコピー (Ctrl+V でそのまま貼れる)
 copy-on-select = clipboard
 
+# フォントレンダリング (WezTerm と並べてストロークが細く見えるのを補正)
+# 既定の `...,autohint,light` から `light` を外し、light hinting を無効にして
+# 線を保持する側に寄せる。font-thicken は macOS 専用のため Linux では使えない。
+freetype-load-flags = hinting,no-force-autohint,no-monochrome,autohint
+
 # Leader key + chord で WezTerm 同等の split を実現
 # ctrl+a → - : 上下に分割 (新ペインは下)
 keybind = ctrl+a>minus=new_split:down
